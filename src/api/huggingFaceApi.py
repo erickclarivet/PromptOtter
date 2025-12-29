@@ -10,8 +10,8 @@ from ..logger import logger
 # modele accessible avec ce client https://huggingface.co/inference/models
 
 # TEMPORARY LOW QUALITY => TO DO : PUT BACK 1080 WHEN PROD
-WIDTH = 1080
-HEIGHT = 1080
+WIDTH = 1024 
+HEIGHT = 1024
 
 class HuggingFaceAPI():
     def __init__(self):
