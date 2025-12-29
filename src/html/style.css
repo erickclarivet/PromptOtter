@@ -1,0 +1,138 @@
+/* ROOT CANVAS */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 1080px;
+  height: 1080px;
+  background: #070a13;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  color: white;
+}
+
+/* CENTER CARD */
+.canvas {
+  width: 1080px;
+  height: 1080px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CARD */
+.card {
+  width: 880px;
+  height: 880px;
+  background: #131c33;
+  border-radius: 48px;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-sizing: border-box;
+  padding: 70px;
+}
+
+/* CARD STRUCTURE */
+.card-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* CENTER STACK */
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+/* VERTICAL RHYTHM */
+.section-gap {
+  margin-top: 28px; /* 👈 spacing standard */
+}
+
+/* AVATAR */
+.avatar {
+  object-position: center;
+  width: 160px;
+  height: 160px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.10);
+}
+
+/* LABELS */
+.winner,
+.label,
+.bottom-label {
+  font-size: 20px;
+  letter-spacing: 3px;
+  font-weight: 800;
+  opacity: 0.7;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* USERNAME */
+.username {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+}
+
+/* PROMPT GROUP */
+.prompt-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px; /* tight label → prompt */
+}
+
+/* PROMPT HERO */
+.prompt {
+  max-width: 720px;
+  margin: 0;
+  font-size: 36px;
+  font-weight: 900;
+  line-height: 1.1;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.prompt-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: 4px;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #6da8ff;
+  border: 1px solid rgba(109,168,255,0.4);
+  border-radius: 999px;
+  background: rgba(109,168,255,0.08);
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 5px;
+  text-align: center;
+  font-size: 22px;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
+.plus {
+  color: #8bb4ff;
+  text-shadow: 0 0 6px rgba(139, 180, 255, 0.35);
+}
+
+.painted-by {
+  margin-top: 18px;
+  font-size: 1rem;
+  color: #888;
+  text-align: center;
+  opacity: 0.85;
+}
