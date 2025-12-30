@@ -56,5 +56,5 @@ class HuggingFaceAPI():
                                             model="eliasalbouzidi/distilbert-nsfw-text-classifier")
         Logger.debug("Is '%s' NSFW ? %s : %s, %s : %s",
                      comment, result[0]['label'],
-                     result[0]['score'], result[1]['label'], result[1]['score'])      
+                     result[0]['score'], result[1]['label'], result[1]['score'])
         return result[0]['label'].lower() == "nsfw" and result[0]['score'] > max_score

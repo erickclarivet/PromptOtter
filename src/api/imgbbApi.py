@@ -4,11 +4,19 @@ import requests
 from ..logger import logger
 
 class ImgbbAPI():
+    """ Class to interact with imgbb API. """
     def __init__(self):
         self._api_key = os.getenv("IMGBB_API_KEY")
         self._root_url = "https://api.imgbb.com/1"
-   
+
     def upload_image(self, image_path:str, expiration:str = "500"):
+        """
+        Upload an image to imgbb.
+        
+        :param image_path (str): Path to the image to upload.
+        :param expiration (str): Time before URL won't be available anymore.
+        :returns (dict): The response data from imgbb API.
+        """
         logger.info("Encoding image in base64.")
         upload_url = f"{self._root_url}/upload"
         with open(image_path, 'rb') as image_file:
