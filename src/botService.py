@@ -15,15 +15,28 @@ from .logger import logger, DAYS
 CURRENT_FOLDER = os.path.dirname(__file__)
 
 class PromptValidator():
+    """ Class to validate and filter prompts/comments."""
     def __init__(self):
         self._hugging_face_api = HuggingFaceAPI()
         self._deepl_api = DeepLAPI()
 
     def clean_prompt(self, text: str):
+        """
+        Clean prompt text by removing unwanted parts.
+        
+        :param text (str): Original prompt text.
+        :returns (str): Cleaned prompt text.
+        """
         text = text.lower().replace("prompt:", "")
         return re.sub(r'[@#]\w+|prompt:', '', text).strip()
 
     def is_promptable(self, comment: str) -> bool:
+        """
+        Check if a comment is a valid prompt.
+                
+        :param comment (str): The comment to evaluate.
+        :returns (bool): True if the comment is a valid prompt, otherwise False
+        """
         if "prompt" not in comment.lower():
             return False
         if any(char in comment for char in ["www", "http"]):
@@ -42,6 +55,12 @@ class PromptValidator():
         return True
 
     def ia_filtering(self, prompts):
+        """
+        Filter prompts using LLM Open IA API.
+        
+        :param prompts: List of prompts to filter.
+        :returns: Filtered list of prompts.
+        """
         # filter with open ia
         prompts_analyzed = self.analyse_prompts(prompts)
         filtered_comments = []
@@ -51,10 +70,21 @@ class PromptValidator():
         return filtered_comments
 
     def is_nsfw(self, comment: str) -> bool:
+        """
+        Analyze if a comment is NSWF using HuggingFace API.
+
+        :param comment (str): Comment to analyze.
+        :returns (bool): True if the comment is NSFW, otherwise False.
+        """
         return self._hugging_face_api.is_nsfw(comment)
-    
+
     def analyse_prompts(self, prompts):
-        # fill user part
+        """
+        Analyze prompts using OpenAI API to classify them as eligible or not.
+        :param prompts (str): List of prompts to analyze.
+        :returns (list[dict]): List of analysis results.
+        """
+        # Fill user part
         user_message = "Classify the following texts:\n\n"
         for i, p in enumerate(prompts, start=1):
             user_message += f"{i}. \"{p['text']}\"\n"
@@ -92,10 +122,15 @@ class PromptValidator():
             ],
             temperature=0
         )
-        
         return json.loads(response.choices[0].message.content)["results"]
 
     def filter_safe_comments(self, comments):
+        """
+        Translate and exclude NSFW comments.
+        
+        :param comments: comments to filter.
+        :returns: List of safe comments.
+        """
         safe_comments = []
         for c in comments:
             c["text_translated"] = self._deepl_api.translate(c["text"])
@@ -106,15 +141,21 @@ class PromptValidator():
         return safe_comments
 
 class BotService():
+    """ Main bot service to coordinate API calls and business logic. """
     def __init__(self):
         self._insta_api = InstaAPI()
         self._hugging_face_api = HuggingFaceAPI()
         self._imgbb_api = ImgbbAPI()
-        self._deepL_api = DeepLAPI()
+        self._deepl_api = DeepLAPI()
         self._html_to_img_api = HtmlToImgApi()
         self._prompt_validator = PromptValidator()
 
     def get_last_media_id(self):
+        """
+        Get the last media id from Instagram page.
+        
+        :returns (str): The last media id.
+        """
         data = self._insta_api.get_medias()
         media_id = None
         if len(data) == 0:
@@ -125,14 +166,21 @@ class BotService():
         return media_id
 
     def select_prompt(self, media_id : str):
+        """
+        Select the best prompt from comments.
+        
+        :param media_id (str): Id of the media/post to get comments from.
+        :returns (tuple): The best prompt and username.
+        """
         best_comment = None
         if media_id:
             comments = self._insta_api.get_comments_from_media(media_id)
             if len(comments) > 0:
                 promptValidator = PromptValidator()
-                sorted_comments = sorted(comments, key=lambda c: -c["like_count"])[:10] # replace by 10
-                simple_filtered_comments = [ {**c, "text": promptValidator.clean_prompt(c["text"])} 
-                                            for c in sorted_comments if promptValidator.is_promptable(c["text"])]
+                sorted_comments = sorted(comments, key=lambda c: -c["like_count"])[:10]
+                simple_filtered_comments = [ {**c, "text": promptValidator.clean_prompt(c["text"])}
+                                            for c in sorted_comments
+                                            if promptValidator.is_promptable(c["text"])]
                 ia_filtered_comments = promptValidator.ia_filtering(simple_filtered_comments)
                 safe_comments = promptValidator.filter_safe_comments(ia_filtered_comments)
                 if len(safe_comments) > 0:
@@ -142,16 +190,28 @@ class BotService():
             logger.info("No comment has been selected. Generating internal prompt.")
             best_comment = {"text": "An Dog with a funny hat that look at us.",
                             "username" : "me"}
-
         return best_comment["text"], best_comment['username']
 
     def generate_image_from_prompt(self, best_prompt: str, output_path:str):
+        """
+        Generate an image from prompt and upload it temporarily to imgbb.
+        
+        :param best_prompt (str): Prompt used to generate the image.
+        :param output_path (str): Path to save the generated image.
+        :returns (str): URL of the imgbb uploaded image.
+        """
         self._hugging_face_api.generate_image(best_prompt, output_path)
         data = self._imgbb_api.upload_image(output_path)
         time.sleep(5) # time to be sure imge is fully uploaded
         return data['url']
 
     def publish_medias(self, img_urls: list[str], caption: str):
+        """
+        Publish medias on Instagram as a carousel.
+        
+        :param img_urls (list[str]): List of image URLs to publish.
+        :param caption (str): Caption for the carousel.
+        """
         container_ids = []
         for img_url in img_urls:
             payload = {
@@ -170,9 +230,16 @@ class BotService():
         self._insta_api.publish_container(carousel_id)
 
     def generate_user_card(self, prompt:str, user_name: str, img_url: str) -> str:
-        # Load templates
+        """
+        Generate a user card image from prompt, username and image URL.
+
+        :param prompt (str): Prompt text.
+        :param user_name (str): Username of prompt author.
+        :param img_url (str): URL of the generated image.
+        :returns: (str): URL of the generated user card image.
+        """
         html_template_path = os.path.join(CURRENT_FOLDER, "html","card.html")
-        css_template_path = os.path.join(CURRENT_FOLDER, "html","style.css")  
+        css_template_path = os.path.join(CURRENT_FOLDER, "html","style.css")
         prompt = html.escape(prompt)
         username = html.escape(user_name)
         with open(html_template_path, encoding="utf8") as f :

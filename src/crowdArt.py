@@ -3,6 +3,9 @@ from .botService import BotService
 from .logger import logger, DAYS
 
 def main():
+    """
+    Main function to run the CrowdArt bot service.
+    """
     try:
         bot_service = BotService()
         media_id = bot_service.get_last_media_id()
@@ -35,8 +38,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# TO DO:
-# - paggination of comments
-# - best model to generate image => NOT DURING POC, TO DO AFTER
-# - Tests ?
