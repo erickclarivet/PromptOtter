@@ -27,7 +27,11 @@ class PromptValidator():
         :param text (str): Original prompt text.
         :returns (str): Cleaned prompt text.
         """
-        text = text.lower().replace("prompt:", "")
+        # get text after last prompt:
+        text = text.lower()
+        if "prompt:" in text:
+            parts = re.split(r'prompt:', text)
+            text = parts[-1]
         return re.sub(r'[@#]\w+|prompt:', '', text).strip()
 
     def is_promptable(self, comment: str) -> bool:
